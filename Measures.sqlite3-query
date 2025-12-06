@@ -1,0 +1,68 @@
+-- database: ./hotel_bookings.db
+
+
+SELECT * FROM hotel_bookings;
+
+-- Total bookings: 87396
+SELECT COUNT(hotel) From hotel_bookings;
+
+-- Hotel visitors count:  City Hotel - 53428, Resort Hotel - 33968
+SELECT hotel, COUNT(hotel) FROM hotel_bookings
+GROUP BY hotel;
+
+-- Cancelation rate: 27,5
+SELECT
+    ROUND(
+        (SUM(CASE WHEN is_canceled = 1 THEN 1 ELSE 0 END) * 100.0)
+        /
+        COUNT(hotel),
+        2
+    ) AS cancelation_rate_percent
+FROM hotel_bookings;
+
+-- Avg length of stay: 3.6 days
+SELECT 
+    ROUND(AVG(stays_in_weekend_nights + stays_in_week_nights), 2) AS avg_stay_nights
+FROM hotel_bookings;
+
+
+-- Revenue per booking
+SELECT 
+    ROUND(
+        SUM(adr * (stays_in_weekend_nights + stays_in_week_nights)) 
+        / COUNT(*), 2
+    ) AS avg_revenue_per_booking
+FROM hotel_bookings;
+
+
+-- Revenue per month
+SELECT 
+    arrival_date_year AS year,
+    arrival_date_month AS month,
+    ROUND(SUM(adr * (stays_in_weekend_nights + stays_in_week_nights)), 2) AS revenue
+FROM hotel_bookings
+GROUP BY year, month
+ORDER BY year, month;
+
+--Business growth:
+WITH monthly AS (
+    SELECT 
+        arrival_date_year AS year,
+        arrival_date_month AS month,
+        COUNT(*) AS bookings
+    FROM hotel_bookings
+    GROUP BY year, month
+)
+SELECT 
+    year,
+    month,
+    bookings,
+    LAG(bookings) OVER (ORDER BY year, month) AS previous_month,
+    ROUND(
+        100.0 * (bookings - LAG(bookings) OVER (ORDER BY year, month))
+        / NULLIF(LAG(bookings) OVER (ORDER BY year, month), 0), 2
+    ) AS percent_growth
+FROM monthly;
+
+
+

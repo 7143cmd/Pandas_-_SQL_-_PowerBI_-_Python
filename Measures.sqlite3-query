@@ -10,6 +10,14 @@ SELECT COUNT(hotel) From hotel_bookings;
 SELECT hotel, COUNT(hotel) FROM hotel_bookings
 GROUP BY hotel;
 
+
+-- Most popular month(top 3)
+SELECT arrival_date_month as month, COUNT(*) as bookings
+FROM hotel_bookings
+Group by month
+ORDER BY bookings DESC
+LIMIT 3;
+
 -- Cancelation rate: 27,5
 SELECT
     ROUND(
@@ -49,7 +57,21 @@ WITH monthly AS (
     SELECT 
         arrival_date_year AS year,
         arrival_date_month AS month,
-        COUNT(*) AS bookings
+        COUNT(*) AS bookings,
+        CASE arrival_date_month
+            WHEN 'January' THEN 1
+            WHEN 'February' THEN 2
+            WHEN 'March' THEN 3
+            WHEN 'April' THEN 4
+            WHEN 'May' THEN 5
+            WHEN 'June' THEN 6
+            WHEN 'July' THEN 7
+            WHEN 'August' THEN 8
+            WHEN 'September' THEN 9
+            WHEN 'October' THEN 10
+            WHEN 'November' THEN 11
+            WHEN 'December' THEN 12
+        END AS month_num
     FROM hotel_bookings
     GROUP BY year, month
 )
@@ -57,12 +79,13 @@ SELECT
     year,
     month,
     bookings,
-    LAG(bookings) OVER (ORDER BY year, month) AS previous_month,
+    LAG(bookings) OVER (ORDER BY year, month_num) AS previous_month,
     ROUND(
-        100.0 * (bookings - LAG(bookings) OVER (ORDER BY year, month))
-        / NULLIF(LAG(bookings) OVER (ORDER BY year, month), 0), 2
+        100.0 * (bookings - LAG(bookings) OVER (ORDER BY year, month_num))
+        / NULLIF(LAG(bookings) OVER (ORDER BY year, month_num), 0), 2
     ) AS percent_growth
-FROM monthly;
+FROM monthly
+ORDER BY year, month_num;
 
 
 

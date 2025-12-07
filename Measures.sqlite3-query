@@ -1,56 +1,98 @@
 -- database: ./hotel_bookings.db
 
 
+-- Base table (check only)
+
 SELECT * FROM hotel_bookings;
 
--- Total bookings: 87396
-SELECT COUNT(hotel) From hotel_bookings;
-
--- Hotel visitors count:  City Hotel - 53428, Resort Hotel - 33968
-SELECT hotel, COUNT(hotel) FROM hotel_bookings
-GROUP BY hotel;
 
 
--- Most popular month(top 3)
-SELECT arrival_date_month as month, COUNT(*) as bookings
-FROM hotel_bookings
-Group by month
-ORDER BY bookings DESC
-LIMIT 3;
+-- 1. Total bookings
 
--- Cancelation rate
-SELECT
-  hotel,
-  ROUND(100.0 * SUM(CASE WHEN is_canceled = 1 THEN 1 ELSE 0 END) / COUNT(*), 2) AS cancel_rate
-FROM hotel_bookings
-GROUP BY hotel;
-
-
--- Avg length of stay: 3.6 days
+CREATE VIEW total_bookings AS
 SELECT 
-    ROUND(AVG(stays_in_weekend_nights + stays_in_week_nights), 2) AS avg_stay_nights
+    COUNT(*) AS total_bookings
 FROM hotel_bookings;
 
 
--- Revenue per booking
+
+-- 2. Bookings by hotel type
+
+CREATE VIEW bookings_by_hotel AS
+SELECT 
+    hotel,
+    COUNT(*) AS total_bookings
+FROM hotel_bookings
+GROUP BY hotel;
+
+
+
+-- 3. Most popular months
+
+CREATE VIEW popular_months AS
+SELECT 
+    arrival_date_month AS month,
+    COUNT(*) AS bookings
+FROM hotel_bookings
+GROUP BY month
+ORDER BY bookings DESC;
+
+
+
+-- 4. Cancellation rate by hotel
+
+CREATE VIEW cancellation_rate_by_hotel AS
+SELECT
+    hotel,
+    ROUND(
+        100.0 * SUM(CASE WHEN is_canceled = 1 THEN 1 ELSE 0 END) / COUNT(*),
+        2
+    ) AS cancel_rate_percent
+FROM hotel_bookings
+GROUP BY hotel;
+
+
+
+-- 5. Average length of stay
+
+CREATE VIEW avg_length_of_stay AS
+SELECT 
+    ROUND(
+        AVG(stays_in_weekend_nights + stays_in_week_nights), 2
+    ) AS avg_stay_nights
+FROM hotel_bookings;
+
+
+
+-- 6. Average revenue per booking
+
+CREATE VIEW avg_revenue_per_booking AS
 SELECT 
     ROUND(
         SUM(adr * (stays_in_weekend_nights + stays_in_week_nights)) 
         / COUNT(*), 2
-    ) AS avg_revenue_per_booking
+    ) AS avg_revenue
 FROM hotel_bookings;
 
 
--- Revenue per month
+
+-- 7. Revenue by month
+
+CREATE VIEW revenue_by_month AS
 SELECT 
     arrival_date_year AS year,
     arrival_date_month AS month,
-    ROUND(SUM(adr * (stays_in_weekend_nights + stays_in_week_nights)), 2) AS revenue
+    ROUND(
+        SUM(adr * (stays_in_weekend_nights + stays_in_week_nights)), 2
+    ) AS revenue
 FROM hotel_bookings
-GROUP BY year, month
-ORDER BY year, month;
+GROUP BY year, month;
 
---Business growth:
+
+
+-- 8. Business growth by month
+
+CREATE VIEW business_growth AS
 WITH monthly AS (
     SELECT 
         arrival_date_year AS year,
@@ -82,8 +124,4 @@ SELECT
         100.0 * (bookings - LAG(bookings) OVER (ORDER BY year, month_num))
         / NULLIF(LAG(bookings) OVER (ORDER BY year, month_num), 0), 2
     ) AS percent_growth
-FROM monthly
-ORDER BY year, month_num;
-
-
-
+FROM monthly;

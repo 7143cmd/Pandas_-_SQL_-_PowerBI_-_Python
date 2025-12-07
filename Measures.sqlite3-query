@@ -18,15 +18,13 @@ Group by month
 ORDER BY bookings DESC
 LIMIT 3;
 
--- Cancelation rate: 27,5
+-- Cancelation rate
 SELECT
-    ROUND(
-        (SUM(CASE WHEN is_canceled = 1 THEN 1 ELSE 0 END) * 100.0)
-        /
-        COUNT(hotel),
-        2
-    ) AS cancelation_rate_percent
-FROM hotel_bookings;
+  hotel,
+  ROUND(100.0 * SUM(CASE WHEN is_canceled = 1 THEN 1 ELSE 0 END) / COUNT(*), 2) AS cancel_rate
+FROM hotel_bookings
+GROUP BY hotel;
+
 
 -- Avg length of stay: 3.6 days
 SELECT 

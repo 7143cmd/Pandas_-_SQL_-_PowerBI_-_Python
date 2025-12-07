@@ -21,6 +21,9 @@ for col in df.select_dtypes(include=['float64']).columns:
 for col in df.select_dtypes(include=['int64']).columns:
     df[col] = pd.to_numeric(df[col], downcast='integer')
 
+df['total_guests'] = df['adults'] + df['babies'] + df['children']
+df['total_nights'] = df['stays_in_weekend_nights'] + df['stays_in_week_nights']
+
 df = df.reset_index(drop=True)
 
 csv_2_sql(df)

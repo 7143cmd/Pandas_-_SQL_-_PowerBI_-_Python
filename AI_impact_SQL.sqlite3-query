@@ -1,0 +1,3 @@
+-- database: ./AI_impact.db
+
+SELECT * FROM AI_impact;

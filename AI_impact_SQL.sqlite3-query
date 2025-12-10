@@ -1,3 +1,67 @@
 -- database: ./AI_impact.db
 
 SELECT * FROM AI_impact;
+
+
+
+-- avg salary
+SELECT ROUND(AVG(Average_Salary), 2) AS avg_salary
+FROM AI_impact;
+
+-- avg ai exposure
+SELECT ROUND(AVG(AI_Exposure_Index), 2) 
+FROM AI_impact;
+
+-- avg automation risk
+SELECT ROUND(AVG(Automation_Probability_2030), 2)
+FROM AI_impact;
+
+
+
+-- risk category parameters
+SELECT 
+    Risk_Category,
+    ROUND(AVG(Automation_Probability_2030), 2) AS avg_automation_prob,
+    ROUND(AVG(AI_Exposure_Index), 2) AS avg_ai_exposure,
+    ROUND(AVG(Average_Salary), 2) AS avg_salary
+FROM AI_impact
+GROUP BY Risk_Category;
+
+-- jobs count in every risk category
+SELECT 
+    Risk_Category,
+    COUNT(*) AS job_count
+FROM AI_impact
+GROUP BY Risk_Category;
+
+-- avg salary by education
+SELECT 
+    Education_Level,
+    ROUND(AVG(Average_Salary), 2) AS avg_salary
+FROM AI_impact
+GROUP BY Education_Level;
+
+-- is experience change anything?
+SELECT 
+    Risk_Category,
+    ROUND(AVG(Years_Experience), 2) AS avg_experience
+FROM AI_impact
+GROUP BY Risk_Category;
+
+
+-- Education to automation corr
+
+Select
+    Education_Level,
+    ROUND(AVG(Automation_Probability_2030), 2) as avg_risk
+From AI_impact
+Group by Education_Level;
+
+-- Total skill score
+SELECT 
+ Job_Title,
+ ROUND( Skill_1 + Skill_2 + Skill_3 + Skill_4 + Skill_5 +
+        Skill_6 + Skill_7 + Skill_8 + Skill_9 + Skill_10, 3) 
+ AS skill_score
+FROM AI_impact
+ORDER BY skill_score DESC;
